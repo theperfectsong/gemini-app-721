@@ -1,0 +1,1109 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  BookOpen, MapPin, Users, Heart, X, Star, RotateCcw, 
+  MessageSquare, ShieldCheck, Sparkles, Send, Calendar, 
+  Clock, Plus, CheckCircle2, Search, Filter, AlertTriangle,
+  User, Check, ChevronRight, Zap, Coffee, Award, Flame, ThumbsUp
+} from 'lucide-react';
+
+const INITIAL_PROFILES = [
+  {
+    id: 'card_1',
+    name: 'Maya Lin',
+    major: 'Bio-Chemistry',
+    year: 'Sophomore',
+    campus: 'Central Campus',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    course: 'CHEM 210',
+    mode: 'buddy',
+    modeLabel: 'Study Buddy',
+    rating: '4.9 ★',
+    reviewsCount: 12,
+    needTitle: 'Reaction Mechanisms & Organic Synthesis',
+    description: 'Struggling with Chapter 4 SN1/SN2 synthesis mechanisms. Looking for a regular whiteboard problem-solving partner at Parr Center!',
+    tags: ['Whiteboard Focus', 'Parr Center', 'Midterm Prep'],
+    availability: 'Mon / Wed / Fri • 5:00 - 8:00 PM',
+    rate: 'Peer Swap (Free)',
+    grade: 'Current: B-'
+  },
+  {
+    id: 'card_2',
+    name: 'Alex Chen',
+    major: 'Computer Science',
+    year: 'Junior',
+    campus: 'Levine Campus',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
+    course: 'CS 101',
+    mode: 'tutor',
+    modeLabel: 'Peer Tutor',
+    rating: '5.0 ★',
+    reviewsCount: 19,
+    needTitle: '1-on-1 Python Recursion & OOP Masterclass',
+    description: 'Scored an A in CS101 last semester! Offering structured 1-on-1 sessions for loops, recursion, and debugging homework assignments.',
+    tags: ['Code Review', 'Levine Tech Lab', 'Patient Tutor'],
+    availability: 'Tue / Thu • 2:00 - 6:00 PM',
+    rate: '$15 / hr',
+    grade: 'Course Grade: A'
+  },
+  {
+    id: 'card_3',
+    name: 'PHYS 150 Cram Squad',
+    major: 'Engineering Club',
+    year: 'Study Group',
+    campus: 'Central Campus',
+    avatar: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80',
+    course: 'PHYS 150',
+    mode: 'group',
+    modeLabel: 'Group (3/5 Seats)',
+    rating: '4.8 ★',
+    reviewsCount: 8,
+    needTitle: 'Kinematics & Work-Energy Exam Review',
+    description: 'Weekly practice problem squad! We tackle past midterm exams together and quiz each other on physics formulas at the library.',
+    tags: ['Group Practice', 'Past Exam Papers', 'Snacks Provided'],
+    availability: 'Thursdays • 7:00 PM',
+    rate: 'Free Group Session',
+    grade: 'Group Avg: 88%'
+  },
+  {
+    id: 'card_4',
+    name: 'Sofia Rodriguez',
+    major: 'Applied Mathematics',
+    year: 'Sophomore',
+    campus: 'Cato Campus',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+    course: 'MATH 201',
+    mode: 'buddy',
+    modeLabel: 'Study Buddy',
+    rating: '4.9 ★',
+    reviewsCount: 15,
+    needTitle: 'Integration by Parts & Infinite Series',
+    description: 'Calc II is brutal this term! Looking for someone at Cato Campus to sit down and grind through weekly problem sets together.',
+    tags: ['Night Owl', 'Cato Math Lab', 'High Energy'],
+    availability: 'Mon - Thu • 8:00 PM - Midnight',
+    rate: 'Free / Peer Credit',
+    grade: 'Current: C+'
+  },
+  {
+    id: 'card_5',
+    name: 'David Kim',
+    major: 'Economics',
+    year: 'Senior',
+    campus: 'Harris Campus',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    course: 'ECON 102',
+    mode: 'tutor',
+    modeLabel: 'Peer Tutor',
+    rating: '4.9 ★',
+    reviewsCount: 22,
+    needTitle: 'Elasticity & Market Structure Graphing',
+    description: 'Experienced economics tutor with pre-made formula sheets and visual graph walkthroughs for exam preparation.',
+    tags: ['Formula Sheets', 'Graph Master', 'Flexible Times'],
+    availability: 'Mon / Wed • 1:00 - 5:00 PM',
+    rate: '$18 / hr',
+    grade: 'Course Grade: A+'
+  }
+];
+
+const CPCC_STUDY_SPOTS = [
+  {
+    id: 'spot_1',
+    name: 'Parr Center 2nd Floor Lounge',
+    campus: 'Central Campus',
+    noise: 'Medium / Social',
+    noiseBg: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+    outlets: 'Abundant Power Outlets',
+    wifi: 'Super Fast Campus WiFi',
+    image: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=400&q=80',
+    description: 'Spacious student commons with whiteboards, lounge chairs, and direct access to coffee shop.'
+  },
+  {
+    id: 'spot_2',
+    name: 'Central Campus Library Silent Study Area',
+    campus: 'Central Campus',
+    noise: 'Silent / Focused',
+    noiseBg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    outlets: 'High Availability',
+    wifi: 'High-Speed Secure WiFi',
+    image: 'https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=400&q=80',
+    description: 'Dedicated quiet floors perfect for intense exam prep and distraction-free deep work.'
+  },
+  {
+    id: 'spot_3',
+    name: 'Levine Campus Tech Lab',
+    campus: 'Levine Campus',
+    noise: 'Collaborative',
+    noiseBg: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
+    outlets: 'At All Workstations',
+    wifi: 'High Speed Ethernet & WiFi',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80',
+    description: 'Equipped with dual-monitor desktops, programming IDEs, and group discussion booths.'
+  }
+];
+
+const INITIAL_MATCHES = [
+  {
+    id: 'card_1',
+    name: 'Maya Lin',
+    campus: 'Central Campus',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    course: 'CHEM 210',
+    mode: 'buddy',
+    modeLabel: 'Study Buddy',
+    lastMessage: 'Are we still meeting at 5 PM at Central Campus Library?',
+    time: '10:42 AM',
+    unread: true,
+    messages: [
+      { sender: 'them', text: 'Hey Alex! Saw we matched for CHEM 210!', time: '10:30 AM' },
+      { sender: 'me', text: 'Awesome! I really need help with Chapter 4 synthesis.', time: '10:35 AM' },
+      { sender: 'them', text: 'Are we still meeting at 5 PM at Central Campus Library?', time: '10:42 AM' }
+    ]
+  },
+  {
+    id: 'card_2',
+    name: 'Alex Chen',
+    campus: 'Levine Campus',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
+    course: 'CS 101',
+    mode: 'tutor',
+    modeLabel: 'Peer Tutor',
+    lastMessage: 'I have an opening tomorrow at 2 PM if you want Python review!',
+    time: 'Yesterday',
+    unread: false,
+    messages: [
+      { sender: 'them', text: 'I have an opening tomorrow at 2 PM if you want Python review!', time: 'Yesterday' }
+    ]
+  }
+];
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('discover');
+  const [deck, setDeck] = useState(INITIAL_PROFILES);
+  const [history, setHistory] = useState([]);
+  const [matches, setMatches] = useState(INITIAL_MATCHES);
+  const [activeChatId, setActiveChatId] = useState(null);
+  
+  // Filters
+  const [modeFilter, setModeFilter] = useState('all');
+  const [courseFilter, setCourseFilter] = useState('all');
+  const [campusFilter, setCampusFilter] = useState('all');
+
+  // Modals & Overlays
+  const [matchModalCard, setMatchModalCard] = useState(null);
+  const [showSosModal, setShowSosModal] = useState(false);
+  const [sosActive, setSosActive] = useState(false);
+  const [sosData, setSosData] = useState({ course: 'CHEM 210', msg: '' });
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [sessionLocation, setSessionLocation] = useState('Parr Center 2nd Floor Lounge');
+  const [showEduModal, setShowEduModal] = useState(false);
+  
+  // New Post Form State
+  const [postType, setPostType] = useState('buddy');
+  const [postCourse, setPostCourse] = useState('CHEM 210');
+  const [postCampus, setPostCampus] = useState('Central Campus');
+  const [postTitle, setPostTitle] = useState('');
+  const [postDesc, setPostDesc] = useState('');
+  const [postTime, setPostTime] = useState('');
+
+  // Toast
+  const [toastMsg, setToastMsg] = useState(null);
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3500);
+  };
+
+  const handleSwipe = (direction, card) => {
+    if (!card) return;
+    setHistory(prev => [...prev, card]);
+    setDeck(prev => prev.filter(c => c.id !== card.id));
+
+    if (direction === 'right' || direction === 'up') {
+      const isSuper = direction === 'up';
+      const existing = matches.find(m => m.id === card.id);
+      if (!existing) {
+        const newMatch = {
+          id: card.id,
+          name: card.name,
+          campus: card.campus,
+          avatar: card.avatar,
+          course: card.course,
+          mode: card.mode,
+          modeLabel: card.modeLabel,
+          lastMessage: isSuper ? '⭐ Sent a Super Study Request!' : 'Matched on StudyMatch!',
+          time: 'Just now',
+          unread: true,
+          messages: [
+            { sender: 'them', text: `Hi! Thanks for connecting. Excited to study ${card.course} together at ${card.campus}!`, time: 'Just now' }
+          ]
+        };
+        setMatches(prev => [newMatch, ...prev]);
+      }
+      setMatchModalCard(card);
+    }
+  };
+
+  const handleRewind = () => {
+    if (history.length === 0) {
+      showToast('No swipes to undo!');
+      return;
+    }
+    const lastCard = history[history.length - 1];
+    setHistory(prev => prev.slice(0, -1));
+    setDeck(prev => [lastCard, ...prev]);
+    showToast(`Restored ${lastCard.name}`);
+  };
+
+  const resetDeck = () => {
+    setDeck(INITIAL_PROFILES);
+    setHistory([]);
+    setModeFilter('all');
+    setCourseFilter('all');
+    setCampusFilter('all');
+    showToast('Deck reset to full campus roster!');
+  };
+
+  const filteredDeck = deck.filter(c => {
+    const matchMode = modeFilter === 'all' || c.mode === modeFilter;
+    const matchCourse = courseFilter === 'all' || c.course === courseFilter;
+    const matchCampus = campusFilter === 'all' || c.campus === campusFilter;
+    return matchMode && matchCourse && matchCampus;
+  });
+
+  const currentTopCard = filteredDeck[0];
+
+  const activeChat = matches.find(m => m.id === activeChatId);
+
+  const sendMessage = (text) => {
+    if (!text.trim() || !activeChatId) return;
+    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    setMatches(prev => prev.map(m => {
+      if (m.id === activeChatId) {
+        return {
+          ...m,
+          lastMessage: text,
+          time: timeNow,
+          messages: [...m.messages, { sender: 'me', text, time: timeNow }]
+        };
+      }
+      return m;
+    }));
+
+    // Auto-reply simulation
+    setTimeout(() => {
+      const replies = [
+        `Sounds great! Works for me.`,
+        `Perfect! What time on campus?`,
+        `Let's conquer this upcoming test together!`,
+        `I've been working through the problem sets as well.`
+      ];
+      const randomReply = replies[Math.floor(Math.random() * replies.length)];
+      const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      setMatches(prev => prev.map(m => {
+        if (m.id === activeChatId) {
+          return {
+            ...m,
+            lastMessage: randomReply,
+            time: replyTime,
+            messages: [...m.messages, { sender: 'them', text: randomReply, time: replyTime }]
+          };
+        }
+        return m;
+      }));
+    }, 1200);
+  };
+
+  const handleCreatePost = (e) => {
+    e.preventDefault();
+    let modeLabel = 'Study Buddy';
+    if (postType === 'tutor') modeLabel = 'Peer Tutor';
+    if (postType === 'group') modeLabel = 'Group Session (1/5 Seats)';
+
+    const newProfile = {
+      id: 'user_card_' + Date.now(),
+      name: 'Alex River (You)',
+      major: 'Computer Science',
+      year: 'Sophomore',
+      campus: postCampus,
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      course: postCourse,
+      mode: postType,
+      modeLabel: modeLabel,
+      rating: '5.0 ★',
+      reviewsCount: 1,
+      needTitle: postTitle || 'Midterm Prep Partner',
+      description: postDesc || 'Looking for classmates to study and review core concepts together.',
+      tags: ['Verified Student', 'Study Match', 'CPCC'],
+      availability: postTime || 'Flexible Availability',
+      rate: postType === 'tutor' ? '$15 / hr' : 'Peer Swap (Free)',
+      grade: 'Enrolled Student'
+    };
+
+    setDeck(prev => [newProfile, ...prev]);
+    showToast('Published card to campus deck!');
+    setActiveTab('discover');
+    setPostTitle('');
+    setPostDesc('');
+    setPostTime('');
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-0 sm:p-4 font-sans selection:bg-indigo-500 selection:text-white">
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed top-5 z-50 bg-indigo-600 text-white px-4 py-2.5 rounded-full shadow-2xl text-xs font-semibold flex items-center gap-2 animate-bounce">
+          <Sparkles className="w-4 h-4" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
+      {/* Main Container - Mobile Shell Style */}
+      <div className="w-full max-w-md h-[100vh] sm:h-[880px] sm:rounded-[36px] bg-slate-900 border-0 sm:border-[8px] border-slate-800 flex flex-col relative overflow-hidden shadow-2xl">
+        
+        {/* Top App Header */}
+        <header className="bg-slate-900/95 border-b border-slate-800 px-4 py-3 flex items-center justify-between z-20 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                StudyMatch
+              </h1>
+              <p className="text-[10px] text-indigo-400 font-semibold uppercase tracking-wider -mt-1">
+                College Peer & Tutor Hub
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button 
+              onClick={() => setShowSosModal(true)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold hover:bg-rose-500/20 transition animate-pulse"
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Cram SOS</span>
+            </button>
+            <button 
+              onClick={() => setShowEduModal(true)}
+              className="p-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition"
+              title="Verified Student Badge"
+            >
+              <ShieldCheck className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={resetDeck}
+              className="p-2 rounded-full bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition"
+              title="Reset Deck"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          </div>
+        </header>
+
+        {}
+        {activeTab === 'discover' && (
+          <main className="flex-1 flex flex-col p-3 overflow-hidden relative">
+            
+            {/* SOS Banner if Active */}
+            {sosActive && (
+              <div className="mb-2 p-2.5 rounded-2xl bg-gradient-to-r from-rose-950 via-slate-900 to-slate-900 border border-rose-500/40 text-xs flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                  <div>
+                    <p className="font-bold text-rose-300">🚨 Cram SOS: {sosData.course}</p>
+                    <p className="text-[10px] text-slate-300 truncate max-w-[200px]">{sosData.msg || 'Exam tomorrow! Need urgent help.'}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSosActive(false)} className="text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+            )}
+
+            {/* Mode & Course Filter Bar */}
+            <div className="space-y-2 mb-2 shrink-0">
+              <div className="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                {['all', 'buddy', 'tutor', 'group'].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setModeFilter(m)}
+                    className={`py-1.5 rounded-lg capitalize font-medium transition ${
+                      modeFilter === m ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {m === 'buddy' ? 'Buddies' : m === 'group' ? 'Groups' : m}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <select 
+                  value={courseFilter} 
+                  onChange={(e) => setCourseFilter(e.target.value)}
+                  className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500 font-medium"
+                >
+                  <option value="all">📚 All Courses</option>
+                  <option value="CHEM 210">CHEM 210 - Org Chem</option>
+                  <option value="CS 101">CS 101 - Intro Python</option>
+                  <option value="MATH 201">MATH 201 - Calc II</option>
+                  <option value="PHYS 150">PHYS 150 - Physics I</option>
+                  <option value="ECON 102">ECON 102 - Microecon</option>
+                </select>
+
+                <select 
+                  value={campusFilter} 
+                  onChange={(e) => setCampusFilter(e.target.value)}
+                  className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500 font-medium"
+                >
+                  <option value="all">📍 All Campuses</option>
+                  <option value="Central Campus">Central Campus</option>
+                  <option value="Levine Campus">Levine Campus</option>
+                  <option value="Cato Campus">Cato Campus</option>
+                  <option value="Harris Campus">Harris Campus</option>
+                </select>
+              </div>
+            </div>
+
+            {/* SWIPE CARD DECK DISPLAY */}
+            <div className="flex-1 relative w-full h-full flex items-center justify-center">
+              {currentTopCard ? (
+                <div className="w-full h-full bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between relative">
+                  
+                  {/* Card Header & Avatar Banner */}
+                  <div className="relative h-48 w-full bg-slate-950 shrink-0">
+                    <img src={currentTopCard.avatar} alt={currentTopCard.name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent"></div>
+                    
+                    <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-600/90 text-white backdrop-blur-md">
+                        {currentTopCard.modeLabel}
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-950/80 text-emerald-400 border border-emerald-500/40 backdrop-blur-md flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        <span>{currentTopCard.campus}</span>
+                      </span>
+                    </div>
+
+                    <div className="absolute bottom-3 left-4 right-4 flex justify-between items-end">
+                      <div>
+                        <h3 className="font-extrabold text-xl text-white flex items-center gap-1.5">
+                          <span>{currentTopCard.name}</span>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        </h3>
+                        <p className="text-xs text-slate-300 font-medium">{currentTopCard.major} • {currentTopCard.year}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 font-bold rounded-lg text-[10px] block mb-1">
+                          {currentTopCard.rating} ({currentTopCard.reviewsCount})
+                        </span>
+                        <span className="px-2.5 py-1 bg-indigo-600 text-white font-extrabold rounded-lg text-xs shadow-md inline-block">
+                          {currentTopCard.course}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Main Body Content */}
+                  <div className="flex-1 p-4 flex flex-col justify-between space-y-3 text-xs overflow-y-auto">
+                    <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Academic Target</span>
+                        <span className="text-[10px] font-semibold text-emerald-400">{currentTopCard.grade}</span>
+                      </div>
+                      <p className="font-bold text-slate-100 text-sm">{currentTopCard.needTitle}</p>
+                    </div>
+
+                    <p className="text-slate-300 leading-relaxed">{currentTopCard.description}</p>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div className="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <span className="text-slate-300 font-medium truncate">{currentTopCard.availability}</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-2">
+                        <Award className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span className="text-slate-300 font-medium truncate">{currentTopCard.rate}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {currentTopCard.tags.map((tag, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300 text-[10px] border border-slate-700">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center p-6 bg-slate-900 border border-slate-800 rounded-3xl max-w-xs space-y-3">
+                  <div className="w-14 h-14 rounded-full bg-slate-800 text-indigo-400 flex items-center justify-center text-2xl mx-auto">
+                    🎓
+                  </div>
+                  <h3 className="font-bold text-white text-base">End of Card Deck</h3>
+                  <p className="text-xs text-slate-400">No profiles match your current course or campus filters.</p>
+                  <button 
+                    onClick={resetDeck}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 mx-auto"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Deck Filters</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* ACTION BUTTON BAR */}
+            <div className="flex items-center justify-around px-4 pt-3 pb-1 shrink-0">
+              <button 
+                onClick={handleRewind}
+                className="w-11 h-11 rounded-full bg-slate-800 text-amber-400 border border-amber-500/30 flex items-center justify-center text-lg shadow hover:bg-slate-700 transition"
+                title="Undo Swipe"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </button>
+              
+              <button 
+                onClick={() => handleSwipe('left', currentTopCard)}
+                className="w-14 h-14 rounded-full bg-slate-900 border-2 border-rose-500/50 text-rose-400 flex items-center justify-center text-2xl shadow-lg hover:bg-rose-500/10 transition"
+                title="Pass"
+              >
+                <X className="w-7 h-7" />
+              </button>
+
+              <button 
+                onClick={() => handleSwipe('up', currentTopCard)}
+                className="w-12 h-12 rounded-full bg-slate-900 border-2 border-cyan-400/50 text-cyan-400 flex items-center justify-center text-xl shadow-lg hover:bg-cyan-400/10 transition"
+                title="Super Study Request"
+              >
+                <Star className="w-6 h-6 fill-cyan-400/20" />
+              </button>
+
+              <button 
+                onClick={() => handleSwipe('right', currentTopCard)}
+                className="w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 text-white flex items-center justify-center shadow-lg hover:scale-105 transition"
+                title="Connect & Study"
+              >
+                <Heart className="w-7 h-7 fill-white" />
+              </button>
+            </div>
+          </main>
+        )}
+
+        {}
+        {activeTab === 'spots' && (
+          <main className="flex-1 p-3 bg-slate-950 overflow-y-auto space-y-3">
+            <div>
+              <h2 className="font-extrabold text-base text-white">Campus Study Spots</h2>
+              <p className="text-xs text-slate-400">Discover top locations with WiFi, outlet density, and quiet zones.</p>
+            </div>
+
+            {CPCC_STUDY_SPOTS.map((spot) => (
+              <div key={spot.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden text-xs">
+                <div className="relative h-28 w-full bg-slate-950">
+                  <img src={spot.image} alt={spot.name} className="w-full h-full object-cover" />
+                  <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-950/80 text-emerald-400">
+                    📍 {spot.campus}
+                  </span>
+                  <span className={`absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold border ${spot.noiseBg}`}>
+                    🔊 {spot.noise}
+                  </span>
+                </div>
+                <div className="p-3 space-y-2">
+                  <h3 className="font-bold text-slate-100 text-sm">{spot.name}</h3>
+                  <p className="text-slate-300 leading-snug">{spot.description}</p>
+                  <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400 pt-1">
+                    <span className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center gap-1">
+                      ⚡️ {spot.outlets}
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center gap-1">
+                      📶 {spot.wifi}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setSessionLocation(spot.name);
+                      setShowSessionModal(true);
+                    }}
+                    className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-indigo-300 font-semibold rounded-xl text-center transition"
+                  >
+                    📅 Schedule Session Here
+                  </button>
+                </div>
+              </div>
+            ))}
+          </main>
+        )}
+
+        {}
+        {activeTab === 'matches' && (
+          <main className="flex-1 bg-slate-950 flex flex-col overflow-hidden relative">
+            {!activeChatId ? (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="p-3 border-b border-slate-800 bg-slate-900 flex justify-between items-center">
+                  <h2 className="font-bold text-slate-100 text-sm flex items-center gap-2">
+                    <span>Academic Connections</span>
+                    <span className="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                      {matches.length}
+                    </span>
+                  </h2>
+                </div>
+
+                <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60 p-2">
+                  {matches.length === 0 ? (
+                    <div className="text-center py-12 text-slate-500 text-xs">
+                      No matches yet. Keep swiping on the Discover tab!
+                    </div>
+                  ) : (
+                    matches.map((m) => (
+                      <div 
+                        key={m.id}
+                        onClick={() => setActiveChatId(m.id)}
+                        className="p-3 hover:bg-slate-900 transition rounded-xl cursor-pointer flex items-center gap-3"
+                      >
+                        <img src={m.avatar} alt={m.name} className="w-12 h-12 rounded-full object-cover border border-slate-700 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-baseline">
+                            <h4 className="font-bold text-sm text-slate-100 truncate">{m.name}</h4>
+                            <span className="text-[10px] text-slate-500">{m.time}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="px-1.5 py-0.2 bg-indigo-500/10 text-indigo-400 rounded text-[9px] font-bold">{m.course}</span>
+                            <span className="px-1.5 py-0.2 bg-emerald-500/10 text-emerald-400 rounded text-[9px] font-bold">📍 {m.campus}</span>
+                          </div>
+                          <p className="text-xs text-slate-400 truncate mt-1">{m.lastMessage}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* INDIVIDUAL CHAT VIEW OVERLAY */
+              <div className="absolute inset-0 bg-slate-950 z-20 flex flex-col">
+                <div className="p-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <button onClick={() => setActiveChatId(null)} className="p-1.5 rounded-full bg-slate-800 text-slate-300">
+                      ←
+                    </button>
+                    <img src={activeChat?.avatar} className="w-9 h-9 rounded-full object-cover" alt="" />
+                    <div>
+                      <h3 className="font-bold text-xs text-white">{activeChat?.name}</h3>
+                      <p className="text-[10px] text-indigo-400 font-medium">{activeChat?.course} • {activeChat?.campus}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowSessionModal(true)}
+                    className="px-2.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold flex items-center gap-1"
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>Plan Session</span>
+                  </button>
+                </div>
+
+                <div className="flex-1 p-3 overflow-y-auto space-y-3">
+                  {activeChat?.messages.map((msg, idx) => (
+                    <div key={idx} className={`flex flex-col ${msg.sender === 'me' ? 'items-end' : 'items-start'}`}>
+                      <div className={`max-w-[80%] p-3 rounded-2xl text-xs ${
+                        msg.sender === 'me' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-none'
+                      }`}>
+                        {msg.text}
+                      </div>
+                      <span className="text-[9px] text-slate-500 mt-0.5 px-1">{msg.time}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Icebreaker suggestions */}
+                <div className="px-3 py-1.5 bg-slate-900/60 border-t border-slate-800 flex gap-2 overflow-x-auto text-xs shrink-0">
+                  <button onClick={() => sendMessage('Library study session tonight?')} className="whitespace-nowrap px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    📍 Library study tonight?
+                  </button>
+                  <button onClick={() => sendMessage('Want to prep for the midterm together?')} className="whitespace-nowrap px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    📝 Midterm Prep?
+                  </button>
+                </div>
+
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const input = e.target.elements.msgInput;
+                    sendMessage(input.value);
+                    input.value = '';
+                  }}
+                  className="p-2.5 bg-slate-900 border-t border-slate-800 flex items-center gap-2"
+                >
+                  <input 
+                    name="msgInput"
+                    type="text" 
+                    placeholder="Write a message or study proposal..."
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                  <button type="submit" className="p-2 rounded-xl bg-indigo-600 text-white">
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
+              </div>
+            )}
+          </main>
+        )}
+
+        {}
+        {activeTab === 'create' && (
+          <main className="flex-1 p-4 bg-slate-950 overflow-y-auto">
+            <div className="mb-4">
+              <h2 className="font-bold text-lg text-white">Post to Campus Deck</h2>
+              <p className="text-xs text-slate-400">Host a group session, offer peer tutoring, or find a study partner.</p>
+            </div>
+
+            <form onSubmit={handleCreatePost} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Intent Mode</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'buddy', label: 'Study Buddy', icon: Users },
+                    { id: 'tutor', label: 'Peer Tutor', icon: Award },
+                    { id: 'group', label: 'Host Group', icon: Flame }
+                  ].map((m) => {
+                    const IconComp = m.icon;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setPostType(m.id)}
+                        className={`p-2.5 rounded-xl border text-center flex flex-col items-center gap-1 transition ${
+                          postType === m.id ? 'border-indigo-500 bg-indigo-500/10 text-white' : 'border-slate-800 bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        <IconComp className="w-4 h-4 text-indigo-400" />
+                        <span className="font-semibold">{m.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Select Course</label>
+                <select 
+                  value={postCourse} 
+                  onChange={(e) => setPostCourse(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200"
+                >
+                  <option value="CHEM 210">CHEM 210 - Organic Chemistry I</option>
+                  <option value="CS 101">CS 101 - Intro Python</option>
+                  <option value="MATH 201">MATH 201 - Calculus II</option>
+                  <option value="PHYS 150">PHYS 150 - Physics I</option>
+                  <option value="ECON 102">ECON 102 - Microeconomics</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Campus Location</label>
+                <select 
+                  value={postCampus} 
+                  onChange={(e) => setPostCampus(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200"
+                >
+                  <option value="Central Campus">Central Campus</option>
+                  <option value="Levine Campus">Levine Campus</option>
+                  <option value="Cato Campus">Cato Campus</option>
+                  <option value="Harris Campus">Harris Campus</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Study Goal / Topic Title</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Midterm 2 Prep / Lab Worksheet"
+                  value={postTitle}
+                  onChange={(e) => setPostTitle(e.target.value)}
+                  required 
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Description & Study Style</label>
+                <textarea 
+                  rows="3" 
+                  placeholder="Describe key topics you plan to tackle and study format..."
+                  value={postDesc}
+                  onChange={(e) => setPostDesc(e.target.value)}
+                  required 
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 resize-none"
+                ></textarea>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Availability</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Mon / Wed 4:00 - 6:00 PM"
+                  value={postTime}
+                  onChange={(e) => setPostTime(e.target.value)}
+                  required 
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-200"
+                />
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 mt-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Publish Card to Campus Deck</span>
+              </button>
+            </form>
+          </main>
+        )}
+
+        {}
+        {activeTab === 'profile' && (
+          <main className="flex-1 p-4 bg-slate-950 overflow-y-auto">
+            <div className="text-center pb-4 border-b border-slate-800">
+              <div className="relative w-20 h-20 mx-auto mb-2">
+                <img 
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" 
+                  className="w-full h-full rounded-full object-cover border-2 border-indigo-500" 
+                  alt="Profile"
+                />
+                <span className="absolute bottom-0 right-0 bg-emerald-500 text-slate-950 rounded-full p-1 border-2 border-slate-900">
+                  <Check className="w-3 h-3 stroke-[3]" />
+                </span>
+              </div>
+              <h2 className="font-extrabold text-base text-white flex items-center justify-center gap-1">
+                <span>Alex River</span>
+                <ShieldCheck className="w-4 h-4 text-indigo-400" />
+              </h2>
+              <p className="text-xs text-slate-400">Computer Science • Verified Student</p>
+              <p className="text-[11px] text-emerald-400 mt-0.5">a.river@college.edu</p>
+
+              <div className="grid grid-cols-3 gap-2 mt-4 bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                <div>
+                  <span className="block font-bold text-indigo-400 text-sm">14</span>
+                  <span className="text-[10px] text-slate-400 uppercase">Matches</span>
+                </div>
+                <div>
+                  <span className="block font-bold text-emerald-400 text-sm">4.9 ★</span>
+                  <span className="text-[10px] text-slate-400 uppercase">Karma Rating</span>
+                </div>
+                <div>
+                  <span className="block font-bold text-amber-400 text-sm">120</span>
+                  <span className="text-[10px] text-slate-400 uppercase">Peer Credits</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="py-3 border-b border-slate-800">
+              <h3 className="font-bold text-xs text-slate-400 uppercase mb-2">My Enrolled Courses</h3>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+                  CHEM 210 (Org Chem)
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
+                  CS 101 (Intro Python)
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+                  MATH 201 (Calc II)
+                </span>
+              </div>
+            </div>
+          </main>
+        )}
+
+        {/* BOTTOM NAVIGATION BAR */}
+        <nav className="bg-slate-900/90 border-t border-slate-800 px-2 py-2 flex justify-around items-center shrink-0 z-30">
+          {[
+            { id: 'discover', label: 'Discover', icon: BookOpen },
+            { id: 'spots', label: 'Spots', icon: MapPin },
+            { id: 'matches', label: 'Matches', icon: MessageSquare, badge: matches.length },
+            { id: 'create', label: 'Post', icon: Plus },
+            { id: 'profile', label: 'Profile', icon: User }
+          ].map((tab) => {
+            const IconComponent = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.id === 'matches') setActiveChatId(null);
+                }}
+                className={`flex flex-col items-center gap-0.5 relative transition ${
+                  isActive ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <IconComponent className="w-5 h-5" />
+                <span className="text-[9px]">{tab.label}</span>
+                {tab.badge > 0 && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* MODAL 1: MATCH CELEBRATION */}
+        {matchModalCard && (
+          <div className="absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center max-w-xs w-full shadow-2xl">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider inline-block mb-3">
+                ⚡️ Academic Match!
+              </span>
+              <h3 className="font-extrabold text-2xl text-white mb-1">It's a Study Match!</h3>
+              <p className="text-xs text-slate-400 mb-4">
+                You and <span className="text-indigo-300 font-bold">{matchModalCard.name}</span> are connected for <span className="text-white font-bold">{matchModalCard.course}</span>.
+              </p>
+
+              <div className="flex items-center justify-center -space-x-3 mb-5">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" className="w-16 h-16 rounded-full border-2 border-slate-900 object-cover" alt="" />
+                <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center z-10 border-2 border-slate-900">⚡️</div>
+                <img src={matchModalCard.avatar} className="w-16 h-16 rounded-full border-2 border-slate-900 object-cover" alt="" />
+              </div>
+
+              <button 
+                onClick={() => {
+                  setMatchModalCard(null);
+                  setActiveTab('matches');
+                  setActiveChatId(matchModalCard.id);
+                }}
+                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition mb-2"
+              >
+                Send Icebreaker Message
+              </button>
+              <button 
+                onClick={() => setMatchModalCard(null)}
+                className="text-xs text-slate-400 underline"
+              >
+                Keep Swiping
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 2: CRAM SOS BROADCAST */}
+        {showSosModal && (
+          <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-rose-500/40 rounded-2xl p-5 w-full max-w-xs text-xs space-y-3">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 className="font-bold text-rose-400 flex items-center gap-1">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Broadcast Cram SOS</span>
+                </h3>
+                <button onClick={() => setShowSosModal(false)} className="text-slate-400"><X className="w-4 h-4" /></button>
+              </div>
+              <p className="text-slate-300">Blast a priority notification to all classmates in your course for urgent exam help.</p>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Target Course</label>
+                <select 
+                  value={sosData.course} 
+                  onChange={(e) => setSosData({ ...sosData, course: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200"
+                >
+                  <option value="CHEM 210">CHEM 210 - Organic Chemistry I</option>
+                  <option value="CS 101">CS 101 - Intro Python</option>
+                  <option value="MATH 201">MATH 201 - Calculus II</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">SOS Alert Message</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Midterm tomorrow at 8 AM! Need reaction help!"
+                  value={sosData.msg}
+                  onChange={(e) => setSosData({ ...sosData, msg: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200"
+                />
+              </div>
+
+              <button 
+                onClick={() => {
+                  setShowSosModal(false);
+                  setSosActive(true);
+                  showToast(`Broadcasted SOS Alert to ${sosData.course}!`);
+                }}
+                className="w-full py-2.5 bg-rose-600 hover:bg-rose-500 font-bold text-white rounded-xl transition"
+              >
+                🚨 Broadcast SOS Alert
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 3: SCHEDULE STUDY SESSION */}
+        {showSessionModal && (
+          <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-xs text-xs space-y-3">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 className="font-bold text-white flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-indigo-400" />
+                  <span>Plan Study Session</span>
+                </h3>
+                <button onClick={() => setShowSessionModal(false)} className="text-slate-400"><X className="w-4 h-4" /></button>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Session Location</label>
+                <input 
+                  type="text" 
+                  value={sessionLocation}
+                  onChange={(e) => setSessionLocation(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Date</label>
+                  <input type="date" defaultValue="2026-10-20" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-slate-200" />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Time</label>
+                  <input type="time" defaultValue="17:00" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-slate-200" />
+                </div>
+              </div>
+
+              <button 
+                onClick={() => {
+                  setShowSessionModal(false);
+                  if (activeChatId) {
+                    sendMessage(`📅 Session Invite: Let's meet at ${sessionLocation}!`);
+                  }
+                  showToast('Study Session Planned!');
+                }}
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 font-bold text-white rounded-xl transition"
+              >
+                Confirm & Send Invite
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 4: EDU VERIFICATION BADGE */}
+        {showEduModal && (
+          <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-xs text-center text-xs space-y-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-sm text-white">Campus Student Verification</h3>
+              <p className="text-slate-300">All users on StudyMatch are verified using their official <span className="text-emerald-400 font-semibold">@college.edu</span> email address to ensure safety.</p>
+              <button 
+                onClick={() => setShowEduModal(false)}
+                className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
